@@ -3,4 +3,5 @@ export enum GridWalls {
   WALLS = Math.pow(10, 1000),
   START = 10,
   END = 20,
+  PATH = 500,
 }

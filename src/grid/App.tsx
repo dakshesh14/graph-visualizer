@@ -1,71 +1,37 @@
-import { useState } from "react";
 import { GridWalls } from "./types";
 import { findGridItem, getNodeColorFromWallType } from "./helper";
+import { findPathUsingDfs } from "./algorithms";
+import { useGrid } from "./useGrid";
 
 function App() {
-  const [grid, setGrid] = useState(
-    Array.from({ length: 10 }, () => Array(20).fill(GridWalls.EMPTY))
-  );
+  const { grid, resetGrid, handleNodeClick, updateGrid } = useGrid();
 
-  function handleClick(
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    rowIndex: number,
-    colIndex: number
-  ) {
-    const isCtrlClick = e.ctrlKey || e.metaKey;
+  const handleButtonClick = async () => {
+    const startNodeIndex = findGridItem(grid, GridWalls.START);
+    const endNodeIndex = findGridItem(grid, GridWalls.END);
 
-    if (isCtrlClick) {
-      const startNodeIndex = findGridItem(grid, GridWalls.START);
-      const endNodeIndex = findGridItem(grid, GridWalls.END);
-
-      if (startNodeIndex !== null && endNodeIndex !== null) {
-        alert("You have already set start and end index");
-        return;
-      }
-
-      if (
-        startNodeIndex !== null &&
-        startNodeIndex.rIdx === rowIndex &&
-        startNodeIndex.cIdx === colIndex
-      ) {
-        alert("Start and end must be different node.");
-        return;
-      }
-
-      if (
-        endNodeIndex !== null &&
-        endNodeIndex.rIdx === rowIndex &&
-        endNodeIndex.cIdx === colIndex
-      ) {
-        alert("Start and end must be different node.");
-        return;
-      }
-
-      const deepCopy = grid.map((row) => [...row]);
-
-      if (startNodeIndex !== null) {
-        deepCopy[rowIndex][colIndex] = GridWalls.END;
-        setGrid(deepCopy);
-      } else {
-        deepCopy[rowIndex][colIndex] = GridWalls.START;
-        setGrid(deepCopy);
-      }
-    } else {
-      setGrid((prevData) =>
-        prevData.map((row, rIdx) =>
-          rIdx !== rowIndex
-            ? row
-            : row.map((cell, cIdx) => {
-                if (cIdx !== colIndex) return cell;
-
-                return cell === GridWalls.EMPTY
-                  ? GridWalls.WALLS
-                  : GridWalls.EMPTY;
-              })
-        )
-      );
+    if (startNodeIndex === null || endNodeIndex === null) {
+      alert("You must define start & end node before finding path.");
+      return;
     }
-  }
+
+    const deepCopy = grid.map((row) => [...row]);
+    const visited = new Set<string>();
+    const path: { rIdx: number; cIdx: number }[] = [];
+
+    const pathFound = await findPathUsingDfs(
+      deepCopy,
+      startNodeIndex.rIdx,
+      startNodeIndex.cIdx,
+      visited,
+      path,
+      updateGrid
+    );
+
+    if (!pathFound) {
+      alert("No path found!");
+    }
+  };
 
   return (
     <div className="md:p-10 xl:p-20">
@@ -74,7 +40,9 @@ function App() {
           {row.map((value, colIndex) => (
             <div
               key={colIndex}
-              onClick={(e) => handleClick(e, rowIndex, colIndex)}
+              onClick={(e) => handleNodeClick(e, rowIndex, colIndex)}
+              // FIXME: perhaps tailwind won't be able to compile colors
+              // from getNodeColorFromWallType so move function logic directly to jsx
               className={`w-10 h-10 border border-gray-400 m-1 ${getNodeColorFromWallType(
                 value
               )}`}
@@ -82,6 +50,28 @@ function App() {
           ))}
         </div>
       ))}
+
+      <div className="flex gap-2">
+        <button
+          onClick={handleButtonClick}
+          className="mt-5 p-2 px-4 rounded border border-gray-900 bg-gray-800 text-white"
+        >
+          Find Path
+        </button>
+        <button
+          onClick={resetGrid}
+          className="mt-5 p-2 px-4 rounded border border-gray-200 bg-gray-100 text-gray-800"
+        >
+          Reset Grid
+        </button>
+      </div>
+
+      <div className="mt-4">
+        <p className="text-gray-500">
+          Ctrl/Cmd click to create starting & ending node.
+        </p>
+        <p className="text-gray-500">Click for creating walls</p>
+      </div>
     </div>
   );
 }

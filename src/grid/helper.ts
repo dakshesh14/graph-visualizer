@@ -18,6 +18,8 @@ export function getNodeColorFromWallType(node: GridWalls) {
       return "bg-green-500";
     case GridWalls.WALLS:
       return "bg-gray-500";
+    case GridWalls.PATH:
+      return "bg-yellow-100";
     default:
       return "bg-transparent";
   }
