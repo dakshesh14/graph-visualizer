@@ -6,4 +6,4 @@ Currently, the project only have DFS but I might add more search algorithms in t
 
 ## Demo:
 
-[demo.webm](./demo/graph-visualizer.webm)
+[demo.webm](https://github.com/user-attachments/assets/b79fb890-75fc-4e3f-bcde-926aeba1ad88)
